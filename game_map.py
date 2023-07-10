@@ -8,10 +8,12 @@ from tcod.console import Console
 import tile_types
 
 if TYPE_CHECKING:
+    from engine import Engine
     from entity import Entity
 
 class GameMap:
-    def __init__(self, width: int, height: int, entities: Iterable[entity] = ()):
+    def __init__(self, engine: Engine, width: int, height: int, entities: Iterable[entity] = ()):
+        self.engine = engine
         self.width, self.height = width, height
         self.entities = set(entities)
         self.tiles = np.full((width, height), fill_value=tile_types.wall, order="F")
@@ -26,7 +28,7 @@ class GameMap:
 
         return None
 
-    def in_bound(self, x: int, y: int) -> bool:
+    def in_bounds(self, x: int, y: int) -> bool:
         """Return true if 'x' and 'y' are inside the bounds of this map."""
         return 0 <= x < self.width and 0 <= y < self.height
 
