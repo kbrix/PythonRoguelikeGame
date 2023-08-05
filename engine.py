@@ -16,6 +16,7 @@ if TYPE_CHECKING:
     from game_map import GameMap
     from input_handlers import EventHandler
 
+
 class Engine:
     game_map: GameMap
 

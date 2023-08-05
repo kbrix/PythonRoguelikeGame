@@ -23,6 +23,10 @@ class GameMap:
         self.explored = np.full((width, height), fill_value=False, order="F") # Tiles the plater has seen before.
 
     @property
+    def game_map(self) -> GameMap:
+        return self
+
+    @property
     def actors(self) -> Iterator[Actor]:
         """Iterate over this map's living actors."""
         yield from (entity for entity in self.entities if isinstance(entity, Actor) and entity.is_alive)

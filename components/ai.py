@@ -2,13 +2,16 @@ from __future__ import annotations
 
 from typing import List, Tuple, TYPE_CHECKING
 
-import numpy as np # type: ignore
+import numpy as np  # type: ignore
 import tcod.path
 
 from actions import Action, MeleeAction, MovementAction, WaitAction
-from components.base_component import BaseComponent
 
-class BaseAI(Action, BaseComponent):
+if TYPE_CHECKING:
+    from entity import Actor
+
+
+class BaseAI(Action):
     entity: Actor
 
     def perform(self) -> None:
@@ -32,13 +35,14 @@ class BaseAI(Action, BaseComponent):
         # Create a graph from the cost array and pass that graph to a new pathfinder.
         graph = tcod.path.SimpleGraph(cost=cost, cardinal=2, diagonal=3)
         pathfinder = tcod.path.Pathfinder(graph)
-        pathfinder.add_root((self.entity.x, self.entity.y)) # Start position.
+        pathfinder.add_root((self.entity.x, self.entity.y))  # Start position.
 
         # Compute the path to the destination and remove the starting point.
         path: List[List[int]] = pathfinder.path_to((dest_x, dest_y))[1:].tolist()
 
         # Convert from List[List[int]] to List[Tuple[int, int]]
         return [(index[0], index[1]) for index in path]
+
 
 class HostileEnemy(BaseAI):
     def __init__(self, entity: Actor):
@@ -49,7 +53,7 @@ class HostileEnemy(BaseAI):
         target = self.engine.player
         dx = target.x - self.entity.x
         dy = target.y - self.entity.y
-        distance = max(abs(dx), abs(dy)) # Chebyshev distance.
+        distance = max(abs(dx), abs(dy))  # Chebyshev distance.
 
         if self.engine.game_map.visible[self.entity.x, self.entity.y]:
             if distance <= 1:
