@@ -7,8 +7,9 @@ if TYPE_CHECKING:
     from entity import Entity
     from game_map import GameMap
 
+
 class BaseComponent:
-    parent: Entity # Owning entity instance.
+    parent: Entity  # Owning entity instance.
 
     @property
     def game_map(self) -> GameMap:

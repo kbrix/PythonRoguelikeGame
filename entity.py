@@ -12,6 +12,7 @@ if TYPE_CHECKING:
 
 T = TypeVar("T", bound="Entity")
 
+
 class Entity:
     """
     A generic object to represent players, enemies, items, etc.
@@ -20,15 +21,15 @@ class Entity:
     parent: GameMap
 
     def __init__(
-        self,
-        parent: Optional[GameMap] = None,
-        x: int = 0,
-        y: int = 0,
-        char: str = "?",
-        color: Tuple[int, int, int] = (255, 255, 255),
-        name: str = "<Unnamed>",
-        blocks_movement: bool = False,
-        render_order: RenderOrder = RenderOrder.CORPSE
+            self,
+            parent: Optional[GameMap] = None,
+            x: int = 0,
+            y: int = 0,
+            char: str = "?",
+            color: Tuple[int, int, int] = (255, 255, 255),
+            name: str = "<Unnamed>",
+            blocks_movement: bool = False,
+            render_order: RenderOrder = RenderOrder.CORPSE
     ):
 
         self.x = x
@@ -61,7 +62,7 @@ class Entity:
         self.x = x
         self.y = y
         if game_map:
-            if hasattr(self, "parent"): # Possibly uninitialized.
+            if hasattr(self, "parent"):  # Possibly uninitialized.
                 if self.parent is self.game_map:
                     self.game_map.entities.remove(self)
             self.parent = game_map
@@ -71,6 +72,7 @@ class Entity:
         # Move the entity by a given amount
         self.x += dx
         self.y += dy
+
 
 class Actor(Entity):
     def __init__(

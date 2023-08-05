@@ -5,8 +5,6 @@ from typing import TYPE_CHECKING
 from tcod.console import Console
 from tcod.map import compute_fov
 
-from actions import EscapeAction, MovementAction
-
 from input_handlers import MainEventHandler
 from message_log import MessageLog
 from render_functions import render_bar, render_names_at_mouse_location

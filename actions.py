@@ -8,6 +8,7 @@ if TYPE_CHECKING:
     from engine import Engine
     from entity import Actor, Entity
 
+
 class Action:
     def __init__(self, entity: Actor) -> None:
         super().__init__()
@@ -22,7 +23,7 @@ class Action:
         """
         Perform this action with objects need to determine its scope.
 
-        `self.engine` is the scape this action is beging performed in.
+        `self.engine` is the scape this action is being performed in.
 
         `self.entity` is the object performing the action.
 
@@ -30,14 +31,17 @@ class Action:
         """
         raise NotImplementedError()
 
+
 class EscapeAction(Action):
     def perform(self) -> None:
         print("Exiting the game!")
         raise SystemExit()
 
+
 class WaitAction(Action):
     def perform(self) -> None:
         pass
+
 
 class ActionWithDirection(Action):
     def __init__(self, entity: Actor, dx: int, dy: int):
@@ -64,11 +68,12 @@ class ActionWithDirection(Action):
     def perform(self) -> None:
         raise NotImplementedError()
 
+
 class MeleeAction(ActionWithDirection):
     def perform(self) -> None:
         target = self.target_actor
         if not target:
-            return # No entity to attack.
+            return  # No entity to attack.
 
         damage = self.entity.fighter.power - target.fighter.defense
 
@@ -89,18 +94,20 @@ class MeleeAction(ActionWithDirection):
                 f"{attack_desc}, but does no damage!", attack_color
             )
 
+
 class MovementAction(ActionWithDirection):
     def perform(self) -> None:
         dest_x, dest_y = self.dest_xy
 
         if not self.engine.game_map.in_bounds(dest_x, dest_y):
-            return # Destination is out of bound.
+            return  # Destination is out of bound.
         if not self.engine.game_map.tiles["walkable"][dest_x, dest_y]:
-            return # Destination is blocked by a title.
+            return  # Destination is blocked by a title.
         if self.engine.game_map.get_blocking_entity_at_location(dest_x, dest_y):
-            return # Destination is blocked by an entity.
+            return  # Destination is blocked by an entity.
 
         self.entity.move(self.dx, self.dy)
+
 
 class BumpAction(ActionWithDirection):
     def perform(self) -> None:

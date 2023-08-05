@@ -1,5 +1,5 @@
-from typing import Iterable, List, Reversible, Tuple
 import textwrap
+from typing import Iterable, List, Reversible, Tuple
 
 import tcod
 
@@ -20,12 +20,13 @@ class Message:
 
         return self.plain_text
 
+
 class MessageLog:
     def __init__(self) -> None:
         self.messages: List[Message] = []
 
     def add_message(
-        self, text: str, fg: Tuple[int, int, int] = color.white, *, stack: bool = True
+            self, text: str, fg: Tuple[int, int, int] = color.white, *, stack: bool = True
     ) -> None:
         """
         Add a message to this log.
@@ -38,7 +39,7 @@ class MessageLog:
             self.messages.append(Message(text=text, fg=fg))
 
     def render(
-        self, console: tcod.console.Console, x: int, y: int, width: int, height: int
+            self, console: tcod.console.Console, x: int, y: int, width: int, height: int
     ) -> None:
         """Render this log to the given area.
         `x`, `y`, `width`, and `height` is the rectangular region to render onto the console."""
@@ -52,13 +53,13 @@ class MessageLog:
 
     @classmethod
     def render_messages(
-        cls,
-        console: tcod.console.Console,
-        x: int,
-        y: int,
-        width: int,
-        height: int,
-        messages: Reversible[Message]
+            cls,
+            console: tcod.console.Console,
+            x: int,
+            y: int,
+            width: int,
+            height: int,
+            messages: Reversible[Message]
     ) -> None:
         """Render messages provided. The `messages` are rendered starting at the last message and working backwards."""
         y_offset = height - 1
@@ -68,4 +69,4 @@ class MessageLog:
                 console.print(x=x, y=y + y_offset, string=line, fg=message.fg)
                 y_offset -= 1
                 if y_offset < 0:
-                    return # No more space to print messages.
+                    return  # No more space to print messages.

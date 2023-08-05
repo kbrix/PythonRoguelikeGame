@@ -1,22 +1,21 @@
 from __future__ import annotations
 
 import random
-from typing import Iterator, Tuple, TYPE_CHECKING
+from typing import Iterator, Tuple, List
 
 import tcod
 
 import entity_factory
-from game_map import GameMap
 import tile_types
+from engine import Engine
+from game_map import GameMap
 
-if TYPE_CHECKING:
-    from engine import Engine
 
 class RectangularRoom:
     def __init__(self, x: int, y: int, width: int, height: int):
-        self.x1 = x # Top left corner.
+        self.x1 = x  # Top left corner.
         self.y1 = y
-        self.x2 = x + width # Computes lower right corner.
+        self.x2 = x + width  # Computes lower right corner.
         self.y2 = y + height
 
     @property
@@ -34,13 +33,15 @@ class RectangularRoom:
     def intersects(self, other: RectangularRoom) -> bool:
         """Return true if this room overlaps with another Rectangular room."""
         return (
-            self.x1 <= other.x2
-            and self.x2 >= other.x1
-            and self.y1 <= other.y2
-            and self.y2 >= other.y1
+                self.x1 <= other.x2
+                and self.x2 >= other.x1
+                and self.y1 <= other.y2
+                and self.y2 >= other.y1
         )
+
+
 def place_entities(
-    room: RectangularRoom, dungeon: GameMap, maximum_monsters: int
+        room: RectangularRoom, dungeon: GameMap, maximum_monsters: int
 ) -> None:
     number_of_monsters = random.randint(0, maximum_monsters)
 
@@ -54,10 +55,11 @@ def place_entities(
             else:
                 entity_factory.troll.spawn(dungeon, x, y)
 
+
 def tunnel_between(
-    start:Tuple[int, int], end: Tuple[int, int]
+        start: Tuple[int, int], end: Tuple[int, int]
 ) -> Iterator[Tuple[int, int]]:
-    """Return an L-shaped tunnel beween these two points."""
+    """Return an L-shaped tunnel between these two points."""
     x1, y1 = start
     x2, y2 = end
     if random.random() < 0.5:
@@ -72,14 +74,15 @@ def tunnel_between(
     for x, y in tcod.los.bresenham((corner_x, corner_y), (x2, y2)).tolist():
         yield x, y
 
+
 def generate_dungeon(
-    max_rooms: int,
-    room_min_size: int,
-    room_max_size: int,
-    map_width: int,
-    map_height: int,
-    max_monsters_per_room: int,
-    engine: Engine,
+        max_rooms: int,
+        room_min_size: int,
+        room_max_size: int,
+        map_width: int,
+        map_height: int,
+        max_monsters_per_room: int,
+        engine: Engine,
 ) -> GameMap:
     """Generate a new dungeon map."""
     player = engine.player
@@ -99,15 +102,15 @@ def generate_dungeon(
 
         # Run through the other rooms and if they intersect with this one.
         if any(new_room.intersects(other_room) for other_room in rooms):
-            continue # This room intersects, so go to the next attempt.
+            continue  # This room intersects, so go to the next attempt.
         # If there are no intersections, then this room is valid.
 
         # Dig out this room's inner area.
         dungeon.tiles[new_room.inner] = tile_types.floor
 
-        if len(rooms) == 0: # The first room where the player starts.
-            player.place(*new_room.center, dungeon) # Mutates player entity.
-        else: # All rooms after the first room.
+        if len(rooms) == 0:  # The first room where the player starts.
+            player.place(*new_room.center, dungeon)  # Mutates player entity.
+        else:  # All rooms after the first room.
             # Dig out a tunnel between this room and the previous one.
             for x, y in tunnel_between(rooms[-1].center, new_room.center):
                 dungeon.tiles[x, y] = tile_types.floor

@@ -2,11 +2,13 @@
 import copy
 
 import tcod
+from tcod.tileset import Tileset
 
 import color
-from engine import Engine
 import entity_factory
+from engine import Engine
 from procgen import generate_dungeon
+
 
 def main() -> None:
     screen_width: int = 80
@@ -21,7 +23,7 @@ def main() -> None:
 
     max_monsters_per_room = 2
 
-    tileset: tileset = tcod.tileset.load_tilesheet(
+    tile_set: Tileset = tcod.tileset.load_tilesheet(
         path="dejavu10x10_gs_tc.png", columns=32, rows=8, charmap=tcod.tileset.CHARMAP_TCOD
     )
 
@@ -46,11 +48,11 @@ def main() -> None:
     )
 
     with tcod.context.new_terminal(
-        columns=screen_width,
-        rows=screen_height,
-        tileset=tileset,
-        title="Kristoffer's Amazing Game 😉",
-        vsync=True,
+            columns=screen_width,
+            rows=screen_height,
+            tileset=tile_set,
+            title="Kristoffer's Amazing Game 😉",
+            vsync=True,
     ) as context:
         root_console = tcod.console.Console(screen_width, screen_height, order="F")
         while True:
@@ -61,6 +63,7 @@ def main() -> None:
             engine.event_handler.handle_events(context)
 
     print("Hello!")
+
 
 if __name__ == "__main__":
     main()

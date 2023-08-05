@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Optional, TYPE_CHECKING
 
-import libtcodpy
+import tcod as libtcodpy
 import tcod.event
 
 from actions import Action, BumpAction, EscapeAction, WaitAction
@@ -47,12 +47,14 @@ WAIT_KEYS = {
 }
 
 CURSOR_Y_KEYS = {
-   tcod.event.KeySym.UP: -1,
-   tcod.event.KeySym.DOWN: 1,
-   tcod.event.KeySym.PAGEUP: -10,
-   tcod.event.KeySym.PAGEDOWN: 10,
+    tcod.event.KeySym.UP: -1,
+    tcod.event.KeySym.DOWN: 1,
+    tcod.event.KeySym.PAGEUP: -10,
+    tcod.event.KeySym.PAGEDOWN: 10,
 }
 
+
+# noinspection SpellCheckingInspection
 class EventHandler(tcod.event.EventDispatch[Action]):
     def __init__(self, engine: Engine):
         self.engine = engine
@@ -72,6 +74,7 @@ class EventHandler(tcod.event.EventDispatch[Action]):
     def on_render(self, console: tcod.console.Console) -> None:
         self.engine.render(console)
 
+
 class MainEventHandler(EventHandler):
     def handle_events(self, context: tcod.context.Context) -> None:
         for event in tcod.event.wait():
@@ -85,7 +88,7 @@ class MainEventHandler(EventHandler):
             action.perform()
 
             self.engine.handle_enemy_turns()
-            self.engine.update_fov() # Update the FOV before the player's next action.
+            self.engine.update_fov()  # Update the FOV before the player's next action.
 
     def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[Action]:
         action: Optional[Action] = None
@@ -106,6 +109,7 @@ class MainEventHandler(EventHandler):
 
         # No valid key was pressed
         return action
+
 
 class GameOverEventHandler(EventHandler):
     def handle_events(self, context: tcod.context.Context) -> None:
@@ -130,15 +134,17 @@ class GameOverEventHandler(EventHandler):
         # No valid key was pressed.
         return action
 
+
 class HistoryViewer(EventHandler):
     """Print the history on a larger window which can be navigated."""
+
     def __init__(self, engine: Engine):
         super().__init__(engine)
         self.log_length = len(engine.message_log.messages)
         self.cursor = self.log_length - 1
 
     def on_render(self, console: tcod.console.Console) -> None:
-        super().on_render(console) # Draw the main state as the background.
+        super().on_render(console)  # Draw the main state as the background.
 
         log_console = tcod.console.Console(console.width - 6, console.height - 6)
 
@@ -150,9 +156,10 @@ class HistoryViewer(EventHandler):
             x=0, y=0, width=log_console.width, height=1, string="┤Message history├", alignment=libtcodpy.CENTER
         )
 
-        # Render the message log using the cursor paramter.
+        # Render the message log using the cursor parameter.
         self.engine.message_log.render_messages(
-            log_console, 1, 1, log_console.width - 2, log_console.height - 2, self.engine.message_log.messages[: self.cursor + 1]
+            log_console, 1, 1, log_console.width - 2, log_console.height - 2,
+            self.engine.message_log.messages[: self.cursor + 1]
         )
 
         log_console.blit(console, 3, 3)
