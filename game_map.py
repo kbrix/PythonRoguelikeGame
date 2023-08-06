@@ -7,8 +7,7 @@ from tcod.console import Console
 
 import tile_types
 from engine import Engine
-from entity import Actor
-from entity import Entity
+from entity import Actor, Entity, Item
 
 
 class GameMap:
@@ -29,6 +28,10 @@ class GameMap:
     def actors(self) -> Iterator[Actor]:
         """Iterate over this map's living actors."""
         yield from (entity for entity in self.entities if isinstance(entity, Actor) and entity.is_alive)
+
+    @property
+    def items(self) -> Iterator[Item]:
+        yield from (entity for entity in self.entities if isinstance(entity, Item))
 
     def get_blocking_entity_at_location(self, location_x: int, location_y: int) -> Optional[Entity]:
         for entity in self.entities:
