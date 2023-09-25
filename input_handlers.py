@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import os
+
 from typing import Callable, Optional, Tuple, TYPE_CHECKING, Union
 
 import tcod as libtcodpy
@@ -88,6 +90,33 @@ class BaseEventHandler(tcod.event.EventDispatch[ActionOrHandler]):
         raise SystemExit()
 
 
+class PopupMessage(BaseEventHandler):
+    """Display a popup text window."""
+
+    def __init__(self, parent_handler: BaseEventHandler, text: str):
+        self.parent = parent_handler
+        self.text = text
+
+    def on_render(self, console: tcod.Console) -> None:
+        """Render the parent and dim the result, then print the message on top."""
+        self.parent.on_render(console)
+        console.tiles_rgb["fg"] //= 8
+        console.tiles_rgb["bg"] //= 8
+
+        console.print(
+            console.width // 2,
+            console.height // 2,
+            self.text,
+            fg=color.white,
+            bg=color.black,
+            alignment=tcod.CENTER,
+        )
+
+    def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[BaseEventHandler]:
+        """Any key returns to the parent handler."""
+        return self.parent
+
+
 # noinspection SpellCheckingInspection
 class EventHandler(BaseEventHandler):
     def __init__(self, engine: Engine):
@@ -103,7 +132,7 @@ class EventHandler(BaseEventHandler):
             if not self.engine.player.is_alive:
                 # The player was killed sometime during or after the action.
                 return GameOverEventHandler(self.engine)
-            return MainEventHandler(self.engine)  # Return to the main handler.
+            return MainGameEventHandler(self.engine)  # Return to the main handler.
         return self
 
     def handle_action(self, action: Optional[Action]) -> bool:
@@ -156,7 +185,7 @@ class AskUserEventHandler(EventHandler):
         """Called when the user is typing to exit or cancel an action.
 
         By default, this return to the main event handler."""
-        return MainEventHandler(self.engine)
+        return MainGameEventHandler(self.engine)
 
 
 class InventoryEventHandler(AskUserEventHandler):
@@ -302,9 +331,9 @@ class SelectIndexHandler(AskUserEventHandler):
 class LookHandler(SelectIndexHandler):
     """Lets the player look around using the keyboard-"""
 
-    def on_index_selected(self, x: int, y: int) -> MainEventHandler:
+    def on_index_selected(self, x: int, y: int) -> MainGameEventHandler:
         """Return to the main handler."""
-        return MainEventHandler(self.engine)
+        return MainGameEventHandler(self.engine)
 
 
 class SingleRangedAttackHandler(SelectIndexHandler):
@@ -355,7 +384,7 @@ class AreaRangedAttackHandler(SelectIndexHandler):
         return self.callback((x, y))
 
 
-class MainEventHandler(EventHandler):
+class MainGameEventHandler(EventHandler):
     def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
         action: Optional[Action] = None
 
@@ -386,10 +415,18 @@ class MainEventHandler(EventHandler):
 
 
 class GameOverEventHandler(EventHandler):
+    def on_quit(self) -> None:
+        """Handle exiting out of a finished game."""
+        if os.path.exists("savegame.sav"):
+            os.remove("savegame.sav")  # Deletes the active save file.
+        raise exceptions.QuitWithoutSaving()  # Avoid saving a finished game.
+
+    def ev_quit(self, event: tcod.event.Quit) -> None:
+        self.on_quit()
+
     def ev_keydown(self, event: tcod.event.KeyDown) -> None:
         if event.sym == tcod.event.KeySym.ESCAPE:
-            raise SystemExit()
-
+            self.on_quit()
 
 class HistoryViewer(EventHandler):
     """Print the history on a larger window which can be navigated."""
@@ -420,7 +457,7 @@ class HistoryViewer(EventHandler):
 
         log_console.blit(console, 3, 3)
 
-    def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[MainEventHandler]:
+    def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[MainGameEventHandler]:
         # Fancy conditional movement to make it feel right.
         if event.sym in CURSOR_Y_KEYS:
             adjust = CURSOR_Y_KEYS[event.sym]
@@ -438,5 +475,5 @@ class HistoryViewer(EventHandler):
         elif event.sym == tcod.event.KeySym.END:
             self.cursor = self.log_length - 1  # Move directly to the last message.
         else:  # Any other key moves back to the main game state.
-            return MainEventHandler(self.engine)
+            return MainGameEventHandler(self.engine)
         return None
